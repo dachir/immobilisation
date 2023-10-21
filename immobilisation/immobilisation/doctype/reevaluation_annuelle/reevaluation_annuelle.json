@@ -1,0 +1,133 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{YY}REVA{##}",
+ "creation": "2023-10-14 10:48:42.699318",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "exercice",
+  "posting_date",
+  "column_break_5qr2x",
+  "ratio",
+  "section_break_b66zy",
+  "company",
+  "debut",
+  "column_break_rbhwm",
+  "category",
+  "fin",
+  "section_break_dpuos",
+  "asset_details",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "debut",
+   "fieldtype": "Date",
+   "label": "Debut"
+  },
+  {
+   "fieldname": "column_break_rbhwm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "label": "Categorie",
+   "options": "Asset Category"
+  },
+  {
+   "fieldname": "fin",
+   "fieldtype": "Date",
+   "label": "Fin"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Reevaluation Annuelle",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_dpuos",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "asset_details",
+   "fieldtype": "Table",
+   "label": "Asset Details",
+   "options": "Reevaluation Asset Details"
+  },
+  {
+   "fieldname": "exercice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Exercice",
+   "options": "Fiscal Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_b66zy",
+   "fieldtype": "Section Break",
+   "label": "Filtre"
+  },
+  {
+   "fieldname": "column_break_5qr2x",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ratio",
+   "fieldtype": "Link",
+   "label": "Ratio",
+   "options": "Ratio Reevaluation"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date Comptabilisation",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [
+  {
+   "link_doctype": "Journal Entry",
+   "link_fieldname": "cheque_no"
+  }
+ ],
+ "modified": "2023-10-21 09:04:46.230150",
+ "modified_by": "Administrator",
+ "module": "Immobilisation",
+ "name": "Reevaluation Annuelle",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

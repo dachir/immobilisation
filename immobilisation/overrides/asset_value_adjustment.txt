@@ -1,0 +1,124 @@
+from erpnext.assets.doctype.asset_value_adjustment.asset_value_adjustment import AssetValueAdjustment
+import frappe
+from frappe import _
+from frappe.model.document import Document
+from frappe.utils import cint, date_diff, flt, formatdate, getdate
+from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+	get_checks_for_pl_and_bs_accounts,
+)
+from erpnext.assets.doctype.asset.asset import (
+	get_asset_value_after_depreciation,
+	get_depreciation_amount,
+)
+from erpnext.assets.doctype.asset.depreciation import get_depreciation_accounts
+
+class CustomAssetValueAdjustment(AssetValueAdjustment):
+    
+    def reschedule_depreciations(self, asset_value):
+        asset = frappe.get_doc("Asset", self.asset)
+        country = frappe.get_value("Company", self.company, "country")
+
+        self.new_opening_asset_value = asset.opening_accumulated_depreciation / asset.gross_purchase_amount * self.new_asset_value
+
+        for d in asset.finance_books:
+            if self.change_initial_value:
+                d.value_after_depreciation = asset_value
+            else:
+                d.value_after_depreciation = self.new_opening_asset_value
+
+            if d.depreciation_method in ("Straight Line", "Manual"):
+                end_date = max(s.schedule_date for s in asset.schedules if cint(s.finance_book_id) == d.idx)
+                total_days = date_diff(end_date, self.date)
+                rate_per_day = flt(d.value_after_depreciation - d.expected_value_after_useful_life) / flt(
+                    total_days
+                )
+                from_date = self.date
+            else:
+                no_of_depreciations = len(
+                    [
+                        s.name for s in asset.schedules if (cint(s.finance_book_id) == d.idx and not s.journal_entry)
+                    ]
+                )
+
+            value_after_depreciation = d.value_after_depreciation
+            for i,data in enumerate(asset.get("schedules")):
+                if cint(data.finance_book_id) == d.idx :
+                    if d.depreciation_method in ("Straight Line", "Manual"):
+                        if self.valuation_method == "Daily":
+                            if not data.journal_entry:
+                                days = date_diff(data.schedule_date, from_date)
+                                depreciation_amount = days * rate_per_day
+                        else :
+                            depreciation_amount = self.new_asset_value / d.total_number_of_depreciations
+                            self.append(
+                                "schedules",
+                                {
+                                    "finance_book": data.finance_book,
+                                    "schedule_date": data.schedule_date,
+                                    "depreciation_amount": depreciation_amount,
+                                    "accumulated_depreciation_amount": value_after_depreciation,
+                                },
+                            )
+                        from_date = data.schedule_date
+                    else:
+                        depreciation_amount = get_depreciation_amount(asset, value_after_depreciation, d)
+
+                    if depreciation_amount:
+                        if self.change_initial_value:
+                            value_after_depreciation -= flt(depreciation_amount)
+                            data.depreciation_amount = depreciation_amount
+                        else :
+                            if i < len(asset.schedules) - 1 :
+                                value_after_depreciation += flt(depreciation_amount)
+                            
+                            data.new_accumulated_depreciation_amount = value_after_depreciation
+                            data.new_depreciation_amount = depreciation_amount
+
+            d.db_update()
+
+        if self.change_initial_value:
+            asset.set_accumulated_depreciation(ignore_booked_entry=True)
+        #frappe.msgprint("ok")
+        else:
+            self.set_accumulated_depreciation(asset, ignore_booked_entry=True)
+        for asset_data in asset.schedules:
+            if not asset_data.journal_entry:
+                asset_data.db_update()
+
+    def set_accumulated_depreciation(
+		self, asset, date_of_disposal=None, date_of_return=None, ignore_booked_entry=False
+	):
+        straight_line_idx = []
+        finance_books = []
+
+        for i, d in enumerate(asset.get("schedules")):
+            if ignore_booked_entry and d.journal_entry:
+                continue
+
+            if int(d.finance_book_id) not in finance_books:
+                straight_line_idx = [
+                    s.idx
+                    for s in asset.get("schedules")
+                    if s.finance_book_id == d.finance_book_id
+                    and (s.depreciation_method == "Straight Line" or s.depreciation_method == "Manual")
+                ]
+                accumulated_depreciation = flt(asset.opening_accumulated_depreciation)
+                value_after_depreciation = flt(
+                    asset.get("finance_books")[cint(d.finance_book_id) - 1].value_after_depreciation
+                )
+                finance_books.append(int(d.finance_book_id))
+
+            depreciation_amount = flt(d.depreciation_amount, d.precision("depreciation_amount"))
+            value_after_depreciation -= flt(depreciation_amount)
+
+            d.depreciation_amount = depreciation_amount
+            accumulated_depreciation += d.depreciation_amount
+            d.accumulated_depreciation_amount = flt(
+                accumulated_depreciation, d.precision("accumulated_depreciation_amount")
+            )
+
+    def on_cancel(self):
+        self.schedules = []
+        #self.set(child_table_fieldname, [])
+        #self.save()
+        super().on_cancel()

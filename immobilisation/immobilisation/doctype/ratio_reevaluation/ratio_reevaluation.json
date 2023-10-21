@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{ann\u00e9e}RATIO{####}",
+ "creation": "2023-10-13 14:34:35.116234",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "ann\u00e9e",
+  "column_break_r5e8z",
+  "categorie",
+  "section_break_rxbcr",
+  "d\u00e9but",
+  "column_break_h7fuk",
+  "fin",
+  "amended_from",
+  "section_break_aw785",
+  "details"
+ ],
+ "fields": [
+  {
+   "fieldname": "ann\u00e9e",
+   "fieldtype": "Link",
+   "label": "Ann\u00e9e",
+   "options": "Fiscal Year",
+   "unique": 1
+  },
+  {
+   "fetch_from": "ann\u00e9e.year_start_date",
+   "fieldname": "d\u00e9but",
+   "fieldtype": "Data",
+   "label": "D\u00e9but"
+  },
+  {
+   "fetch_from": "ann\u00e9e.year_end_date",
+   "fieldname": "fin",
+   "fieldtype": "Data",
+   "label": "Fin"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Ratio Reevaluation",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_h7fuk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_aw785",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Details"
+  },
+  {
+   "fieldname": "details",
+   "fieldtype": "Table",
+   "options": "Ratio Details"
+  },
+  {
+   "fieldname": "categorie",
+   "fieldtype": "Link",
+   "label": "Cat\u00e9gorie",
+   "options": "Asset Category"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "column_break_r5e8z",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_rxbcr",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-10-14 10:19:19.873119",
+ "modified_by": "Administrator",
+ "module": "Immobilisation",
+ "name": "Ratio Reevaluation",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

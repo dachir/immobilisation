@@ -94,9 +94,9 @@ app_license = "MIT"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+    "Asset": "immobilisation.overrides.asset.CustomAsset"
+}
 
 # Document Events
 # ---------------
@@ -199,3 +199,11 @@ app_license = "MIT"
 # auth_hooks = [
 #	"immobilisation.auth.validate"
 # ]
+
+fixtures = [
+    "Custom Field",
+    "Client Script",
+    #"Server Script",
+    {"dt": "Server Script", "filters": [["disabled", "=", 0]]},
+]
+
