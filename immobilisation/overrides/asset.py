@@ -7,6 +7,7 @@ class CustomAsset(Asset):
 
     def before_submit(self):
         depreciation_start_date = self.finance_books[0].depreciation_start_date
+        amount = self.get_first_year_depreciation()
         fy_doc = frappe.get_doc("Fiscal Year", 
             {
                 "year_start_date" : ["<=", depreciation_start_date],
@@ -19,10 +20,21 @@ class CustomAsset(Asset):
             {
                 "annee": fy_doc.name,
                 "base": self.gross_purchase_amount,
-                "dotation": self.opening_accumulated_depreciation,
+                "dotation": amount[0].depreciation_amount,
                 "ratio": 1,
                 "date_traitement": frappe.utils.getdate(),
             }
+        )
+
+    def get_first_year_depreciation(self):
+        return frappe.db.sql(
+            """
+            SELECT SUM(depreciation_amount) AS depreciation_amount
+            FROM `tabDepreciation Schedule` ds INNER JOIN 
+                (SELECT MIN(YEAR(schedule_date)) AS min_year FROM `tabDepreciation Schedule` WHERE parent = %s) t 
+                ON YEAR(ds.schedule_date) = t.min_year
+            WHERE parent = %s
+            """, (self.name, self.name), as_dict=1
         )
 
     def get_complement_account(self,account):

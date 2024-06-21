@@ -201,9 +201,8 @@ override_doctype_class = {
 # ]
 
 fixtures = [
-    "Custom Field",
-    "Client Script",
-    #"Server Script",
-    {"dt": "Server Script", "filters": [["disabled", "=", 0]]},
+    {"dt": "Custom Field", "filters": [["module", "=", "Immobilisation"]]},
+    {"dt": "Client Script", "filters": [["enabled", "=", 1],["module", "=", "Immobilisation"]]},
+    {"dt": "Server Script", "filters": [["disabled", "=", 0],["module", "=", "Immobilisation"]]},
 ]
 

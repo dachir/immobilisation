@@ -9,9 +9,11 @@
  "engine": "InnoDB",
  "field_order": [
   "exercice",
+  "begin",
   "posting_date",
   "column_break_5qr2x",
   "ratio",
+  "end",
   "section_break_b66zy",
   "company",
   "debut",
@@ -97,6 +99,20 @@
    "in_list_view": 1,
    "label": "Date Comptabilisation",
    "reqd": 1
+  },
+  {
+   "fetch_from": "exercice.year_start_date",
+   "fieldname": "begin",
+   "fieldtype": "Date",
+   "label": "Begin",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "exercice.year_end_date",
+   "fieldname": "end",
+   "fieldtype": "Date",
+   "label": "End",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
@@ -107,7 +123,7 @@
    "link_fieldname": "cheque_no"
   }
  ],
- "modified": "2023-10-21 09:04:46.230150",
+ "modified": "2023-11-30 09:01:48.238008",
  "modified_by": "Administrator",
  "module": "Immobilisation",
  "name": "Reevaluation Annuelle",
