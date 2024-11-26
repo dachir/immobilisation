@@ -154,6 +154,7 @@ class CustomAsset(Asset):
         je.posting_date = date
         je.cheque_no = name
         je.cheque_date = date
+        je.multi_currency = 1 #a enlever apres
         if type == 'base':
             je.append(
                 "accounts",
