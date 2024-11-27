@@ -149,6 +149,7 @@ class CustomAsset(Asset):
             depreciation_cost_center = self.cost_center or depreciation_cost_center
 
         je = frappe.new_doc("Journal Entry")
+        je.voucher_type = 'Depreciation Entry'
         je.company = self.company
         je.remark = "Complement sur Valeur Initiale" if type == 'base' else "Complement sur Ammortissements"
         je.posting_date = date
