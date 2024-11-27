@@ -20,7 +20,7 @@ class CustomAsset(Asset):
             {
                 "annee": fy_doc.name,
                 "base": self.gross_purchase_amount,
-                "dotation": amount[0].depreciation_amount,
+                "dotation": 0,
                 "ratio": 1,
                 "date_traitement": frappe.utils.getdate(),
             }

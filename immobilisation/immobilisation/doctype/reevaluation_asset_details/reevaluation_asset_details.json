@@ -11,7 +11,15 @@
   "description",
   "available_for_use_date",
   "location",
-  "asset_owner_company"
+  "asset_owner_company",
+  "valeur_reevalue",
+  "amortissement_reevalue",
+  "complement_valeur",
+  "complement_amortissement",
+  "ratio",
+  "date_traitement",
+  "supplement_amortissement",
+  "dotation_periode"
  ],
  "fields": [
   {
@@ -49,12 +57,53 @@
    "fieldtype": "Data",
    "label": "Description",
    "read_only": 1
+  },
+  {
+   "fieldname": "valeur_reevalue",
+   "fieldtype": "Float",
+   "label": "Valeur Reevaluee"
+  },
+  {
+   "fieldname": "complement_valeur",
+   "fieldtype": "Float",
+   "label": "Complement Valeur"
+  },
+  {
+   "fieldname": "complement_amortissement",
+   "fieldtype": "Float",
+   "label": "Complement Amortissement"
+  },
+  {
+   "fieldname": "amortissement_reevalue",
+   "fieldtype": "Float",
+   "label": "Amortissements Reevalues"
+  },
+  {
+   "fieldname": "ratio",
+   "fieldtype": "Float",
+   "label": "Ratio"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_traitement",
+   "fieldtype": "Date",
+   "label": "Date Traitement"
+  },
+  {
+   "fieldname": "supplement_amortissement",
+   "fieldtype": "Float",
+   "label": "Supplement Amortissement"
+  },
+  {
+   "fieldname": "dotation_periode",
+   "fieldtype": "Float",
+   "label": "Dotation Periode"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-10-14 14:48:37.490981",
+ "modified": "2024-11-27 22:57:28.993181",
  "modified_by": "Administrator",
  "module": "Immobilisation",
  "name": "Reevaluation Asset Details",
