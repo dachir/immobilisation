@@ -143,7 +143,7 @@ class CustomAsset(Asset):
         if type == 'base':
             debit_account, credit_amortissement = self.get_complement_account('complement_sur_valeur'), self.get_cwip_account()
         else :
-            debit_account, credit_amortissement = self.get_complement_account('accumulated_depreciation_account'), self.get_complement_account('complement_sur_amortissement')
+            debit_account, credit_amortissement = self.get_cwip_account(), self.get_complement_account('complement_sur_amortissement')
 
             depreciation_cost_center, depreciation_series = frappe.get_cached_value(
                 "Company", self.company, ["depreciation_cost_center", "series_for_depreciation_entry"]
