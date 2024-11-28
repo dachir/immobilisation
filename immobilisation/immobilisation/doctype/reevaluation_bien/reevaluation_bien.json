@@ -7,8 +7,11 @@
  "engine": "InnoDB",
  "field_order": [
   "annee",
-  "base",
-  "dotation",
+  "dotation_periode",
+  "valeur_reevaluee",
+  "amortissement_reevalue",
+  "complement_valeur",
+  "complement_amortissement",
   "ratio",
   "date_traitement"
  ],
@@ -18,16 +21,6 @@
    "fieldtype": "Link",
    "label": "Annee",
    "options": "Fiscal Year"
-  },
-  {
-   "fieldname": "base",
-   "fieldtype": "Currency",
-   "label": "Base"
-  },
-  {
-   "fieldname": "dotation",
-   "fieldtype": "Currency",
-   "label": "Dotation"
   },
   {
    "default": "1",
@@ -40,12 +33,37 @@
    "fieldname": "date_traitement",
    "fieldtype": "Datetime",
    "label": "Date Traitement"
+  },
+  {
+   "fieldname": "dotation_periode",
+   "fieldtype": "Float",
+   "label": "Dotation Periode"
+  },
+  {
+   "fieldname": "valeur_reevaluee",
+   "fieldtype": "Float",
+   "label": "Valeur Reevaluee"
+  },
+  {
+   "fieldname": "amortissement_reevalue",
+   "fieldtype": "Float",
+   "label": "Amortissements Reevalues"
+  },
+  {
+   "fieldname": "complement_valeur",
+   "fieldtype": "Float",
+   "label": "Complement Valeur"
+  },
+  {
+   "fieldname": "complement_amortissement",
+   "fieldtype": "Float",
+   "label": "Complement Amortissement"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2023-10-14 18:56:28.723700",
+ "modified": "2024-11-28 06:59:04.660394",
  "modified_by": "Administrator",
  "module": "Immobilisation",
  "name": "Reevaluation Bien",

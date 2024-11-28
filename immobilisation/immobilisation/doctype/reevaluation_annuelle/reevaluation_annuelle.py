@@ -79,7 +79,7 @@ class ReevaluationAnnuelle(Document):
 					""",{"asset": i.asset, "exercice": old_exercice}, as_dict = 1
 				)
 				old_valeur_reevalue = old_list[0].valeur_reevalue
-				old_amortissement_reevalue = old_list[0].amortissement_reevalue
+				old_amortissement_reevalue = old_list[0].amortissement_reevalue * old_list[0].ratio
 				old_complement_amortissement = old_list[0].complement_amortissement
 			else:
 				old_list = frappe.db.sql(
@@ -147,46 +147,23 @@ class ReevaluationAnnuelle(Document):
 			if comp_dotation > 0 :
 				as_doc.make_complement_entries(comp_dotation, 'complement', self.name, self.posting_date)
 
-
-		
-
-
-
-
-		"""
-		for i in reev_list:
-			as_doc = frappe.get_doc('Asset', i.parent)
-			#rb_doc = frappe.get_doc("Reevaluation Bien", {"parent" : i.parent})
+			"""
 			rb_doc = frappe.new_doc('Reevaluation Bien')
-			rb_doc.annee = i.exercice
-			rb_doc.base = i.comp_base
-			rb_doc.dotation = i.comp_dotation
-			rb_doc.ratio = i.ratio
-			rb_doc.date_traitement = i.date_traitement
+			rb_doc.annee = self.exercice
+			rb_doc.dotation_periode = reev_list[0].depreciation_amount
+			rb_doc.valeur_reevaluee = reev_list[0].valeur_reeval
+			rb_doc.amortissement_reevalue = reev_list[0].depreciation_amount
+			rb_doc.complement_valeur = comp_base
+			rb_doc.complement_amortissement = comp_dotation
+			rb_doc.ratio = reev_list[0].ratio
+			#rb_doc.date_traitement = i.date_traitement
 			rb_doc.docstatus = as_doc.docstatus
-			rb_doc.parent = i.parent
-			rb_doc.parentfield = i.parentfield
-			rb_doc.parenttype  = i.parenttype
+			rb_doc.parent = i.asset
+			rb_doc.parentfield = "reevalutaion_details"
+			rb_doc.parenttype  = "Asset"
 			rb_doc.idx = len(as_doc.reevalutaion_details) + 1
 
 			rb_doc.save()
 
-			if as_doc.last_reevaluation:
-				journal_entries = frappe.db.get_list("Journal Entry", fields=["*"], filters={"cheque_no": as_doc.last_reevaluation, "docstatus" : 1})
-				for je in journal_entries:
-					rev = make_reverse_journal_entry(je.name)
-					rev.posting_date = frappe.utils.getdate()
-					rev.cheque_no = self.name
-					rev.cheque_date = je.posting_date
-					rev.user_remark = je.name
-					rev.save()
-
-			if i.comp_base > 0 :
-				as_doc.make_complement_entries(i.comp_base, 'base', self.name, self.posting_date)
-			if i.comp_dotation > 0 :
-				as_doc.make_complement_entries(i.comp_dotation, 'complement', self.name, self.posting_date)
-
-			
 			frappe.db.set_value('Asset', i.parent, 'last_reevaluation', self.name)
-		"""	
-
+			"""

@@ -6,6 +6,7 @@ from erpnext.assets.doctype.asset_category.asset_category import get_asset_categ
 class CustomAsset(Asset):
 
     def before_submit(self):
+        pass
         depreciation_start_date = self.finance_books[0].depreciation_start_date
         amount = self.get_first_year_depreciation()
         fy_doc = frappe.get_doc("Fiscal Year", 
@@ -96,7 +97,8 @@ class CustomAsset(Asset):
             #self.db_set("booked_fixed_asset", 1)
 
     def make_complement_depreciation_entries(self,amount):
-        accumulated_depreciation_account, complement_sur_amortissement = self.get_complement_account('accumulated_depreciation_account'), self.get_complement_account('complement_sur_amortissement')
+        #accumulated_depreciation_account, complement_sur_amortissement = self.get_complement_account('accumulated_depreciation_account'), self.get_complement_account('complement_sur_amortissement')
+        cwip_account, complement_sur_amortissement = self.get_cwip_account(), self.get_complement_account('complement_sur_amortissement')
 
         depreciation_cost_center, depreciation_series = frappe.get_cached_value(
             "Company", self.company, ["depreciation_cost_center", "series_for_depreciation_entry"]
@@ -126,7 +128,7 @@ class CustomAsset(Asset):
         je.append(
             "accounts",
             {
-                "account": accumulated_depreciation_account,
+                "account": cwip_account,
                 "reference_type": "Asset",
                 "reference_name": self.name,
                 "debit": amount,
