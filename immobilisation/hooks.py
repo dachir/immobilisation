@@ -204,5 +204,6 @@ fixtures = [
     {"dt": "Custom Field", "filters": [["module", "=", "Immobilisation"]]},
     {"dt": "Client Script", "filters": [["enabled", "=", 1],["module", "=", "Immobilisation"]]},
     {"dt": "Server Script", "filters": [["disabled", "=", 0],["module", "=", "Immobilisation"]]},
+    {"dt": "Report", "filters": [["disabled", "=", 0],["module", "=", "Immobilisation"]]},
 ]
 

@@ -1,0 +1,159 @@
+[
+ {
+  "add_total_row": 0,
+  "columns": [
+   {
+    "fieldname": "asset",
+    "fieldtype": "Link",
+    "label": "Immobilisation",
+    "options": "Asset",
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "exercice",
+    "fieldtype": "Link",
+    "label": "Exercice",
+    "options": "Fiscal Year",
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "ratio",
+    "fieldtype": "Float",
+    "label": "Ratio",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "gross_purchase_amount",
+    "fieldtype": "Float",
+    "label": "Valeur Initial",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "valeur_reevalue",
+    "fieldtype": "Float",
+    "label": "Valeur Brut Comptable",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "complement_valeur",
+    "fieldtype": "Float",
+    "label": "Complement Valeur",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "dotation_periode",
+    "fieldtype": "Float",
+    "label": "Cumul Amortissement",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "amortissement_reevalue",
+    "fieldtype": "Float",
+    "label": "Cumul Amortissement Reevalue",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   },
+   {
+    "fieldname": "complement_amortissement",
+    "fieldtype": "Float",
+    "label": "Complement Amortissement",
+    "options": null,
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "columns",
+    "parenttype": "Report",
+    "width": 0
+   }
+  ],
+  "disable_prepared_report": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [
+   {
+    "fieldname": "exercice",
+    "fieldtype": "Link",
+    "label": "Exercice",
+    "mandatory": 0,
+    "options": "Fiscal Year",
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   },
+   {
+    "fieldname": "asset",
+    "fieldtype": "Link",
+    "label": "Immobilisation",
+    "mandatory": 0,
+    "options": "Asset",
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "filters",
+    "parenttype": "Report",
+    "wildcard_filter": 0
+   }
+  ],
+  "is_standard": "No",
+  "javascript": null,
+  "json": null,
+  "letter_head": null,
+  "modified": "2024-11-28 11:40:09.649493",
+  "module": "Immobilisation",
+  "name": "Reevaluation Immobilisation",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "Reevaluation Annuelle",
+  "reference_report": null,
+  "report_name": "Reevaluation Immobilisation",
+  "report_script": "def get_data(filters=None):\r\n    # Prepare the dynamic SQL query to pivot data with months as columns\r\n    sql_query = \"\"\"\r\n    SELECT rad.*, a.gross_purchase_amount, ra.exercice\r\n    FROM `tabReevaluation Asset Details` rad INNER JOIN tabAsset a ON a.name = rad.asset INNER JOIN `tabReevaluation Annuelle` ra ON rad.parent = ra.name\r\n    WHERE ra.docstatus = 1 AND  ra.exercice LIKE %(exercice)s AND rad.asset LIKE %(asset)s\r\n    ORDER BY rad.asset, ra.exercice\r\n    \"\"\"\r\n    \r\n    # Define the filter values\r\n    exercice = filters.get(\"exercice\") if filters.get(\"exercice\") else \"%\"\r\n    asset = filters.get(\"asset\") if filters.get(\"asset\") else \"%\"\r\n    \r\n    # Execute the SQL query with the filters\r\n    result = frappe.db.sql(sql_query, {'exercice': exercice, 'asset': asset}, as_dict=True)\r\n    \r\n    return result\r\n\r\n# Call the function\r\nresult = get_data(filters)",
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "System Manager"
+   },
+   {
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts Manager"
+   },
+   {
+    "parent": "Reevaluation Immobilisation",
+    "parentfield": "roles",
+    "parenttype": "Report",
+    "role": "Accounts User"
+   }
+  ]
+ }
+]
