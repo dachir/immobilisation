@@ -33,33 +33,64 @@ class ReevaluationAnnuelle(Document):
 	
 	@frappe.whitelist()
 	def get_assets(self):
-		cond = ""
-		if self.company : 
-			cond += " AND asset_owner_company = '" + self.company + "'"
-		if self.category : 
-			cond += " AND asset_category = '" + self.category + "'"
-		if self.debut : 
-			cond += " AND available_for_use_date >= '" + self.debut + "'"
-		if self.fin : 
-			cond += " AND available_for_use_date <= '" + self.fin + "'"
-		
-		assets = frappe.db.sql(
-			"""
-				SELECT *
-				FROM tabAsset
-				WHERE status IN ("Submitted","Partially Depreciated","Fully Depreciated") AND docstatus = 1
-				{condition}
-			""".format(condition=cond), as_dict = 1
-		)
+		# Initialize conditions list
+		conditions = []
+		parameters = []
+
+		# Add conditions based on user input
+		if self.company:
+			conditions.append("a.asset_owner_company = %s")
+			parameters.append(self.company)
+
+		if self.category:
+			conditions.append("a.asset_category = %s")
+			parameters.append(self.category)
+
+		if self.debut:
+			conditions.append("a.available_for_use_date >= %s")
+			parameters.append(self.debut)
+
+		if self.fin:
+			conditions.append("a.available_for_use_date <= %s")
+			parameters.append(self.fin)
+
+		# Combine conditions into a single string
+		cond = " AND " + " AND ".join(conditions) if conditions else ""
+
+		# SQL Query
+		query = f"""
+			SELECT a.*, rd.exercice
+			FROM `tabAsset` a
+			LEFT JOIN (
+				SELECT rad.*, ra.exercice
+				FROM `tabReevaluation Asset Details` rad
+				INNER JOIN `tabReevaluation Annuelle` ra ON rad.parent = ra.name
+				WHERE ra.exercice = %s AND ra.docstatus = 1
+			) rd ON rd.asset = a.name
+			WHERE a.status IN ("Submitted", "Partially Depreciated", "Fully Depreciated")
+			AND a.docstatus = 1 AND rd.asset IS NULL
+			{cond}
+		"""
+
+		# Add exercice to parameters
+		parameters.insert(0, self.exercice)
+
+		# Execute the query
+		assets = frappe.db.sql(query, parameters, as_dict=1)
+
+		# Clear and append results
 		self.asset_details.clear()
 		for a in assets:
-			self.append("asset_details",{"asset": a.name})
+			self.append("asset_details", {"asset": a.name})
+
 
 	def on_submit(self):
 		for i in self.asset_details:
 			old_valeur_reevalue = 0
 			old_amortissement_reevalue = 0
 			old_complement_amortissement = 0
+			old_ratio = 0
+			old_exercice = 0
 
 			exo_list = frappe.db.sql(
 				"""
@@ -81,10 +112,11 @@ class ReevaluationAnnuelle(Document):
 				old_valeur_reevalue = old_list[0].valeur_reevalue
 				old_amortissement_reevalue = old_list[0].amortissement_reevalue * old_list[0].ratio
 				old_complement_amortissement = old_list[0].complement_amortissement
+				old_ratio = old_list[0].ratio
 			else:
 				old_list = frappe.db.sql(
 					"""
-						SELECT SUM(d.depreciation_amount)  AS depreciation_val, MAX(a.gross_purchase_amount) AS valeur_init
+						SELECT SUM(d.depreciation_amount)  AS depreciation_val, MAX(a.gross_purchase_amount) AS valeur_init, MAX(ra.ratio) AS ratio
 						FROM tabAsset a INNER JOIN `tabDepreciation Schedule` d ON a.name = d.parent
 						INNER JOIN `tabReevaluation Asset Details` rad ON rad.asset = a.name
 						INNER JOIN `tabReevaluation Annuelle` ra ON rad.parent = ra.name AND YEAR(d.schedule_date) <= ra.exercice
@@ -95,6 +127,7 @@ class ReevaluationAnnuelle(Document):
 
 				old_valeur_reevalue = old_list[0].valeur_init
 				old_amortissement_reevalue = old_list[0].depreciation_val
+				old_ratio = old_list[0].ratio
 
 				#frappe.throw(str(old_list[0].valeur_init))
 			#frappe.throw(str(old_valeur_reevalue) + "||" + str(old_amortissement_reevalue))
@@ -110,27 +143,62 @@ class ReevaluationAnnuelle(Document):
 					WHERE ra.name = %(name)s AND a.name = %(asset)s AND ra.docstatus = 1
 				""",{"name":self.name, "asset": i.asset}, as_dict = 1
 			)
-			i.valeur_reevalue = reev_list[0].valeur_reeval
-			i.amortissement_reevalue = reev_list[0].depreciation_reeval
-			i.ratio = reev_list[0].ratio
-			i.dotation_periode = reev_list[0].depreciation_amount
+
+
+			#i.valeur_reevalue = reev_list[0].valeur_reeval
+			#i.amortissement_reevalue = reev_list[0].depreciation_reeval
+			#i.ratio = reev_list[0].ratio
+			#i.dotation_periode = reev_list[0].depreciation_amount
 
 			#frappe.throw(str( reev_list[0].valeur_reeval) + "||" + str(reev_list[0].depreciation_reeval))
 
-			frappe.db.set_value('Reevaluation Asset Details', i.name, 'valeur_reevalue', reev_list[0].valeur_reeval)
-			frappe.db.set_value('Reevaluation Asset Details', i.name, 'amortissement_reevalue', reev_list[0].depreciation_reeval)
-			frappe.db.set_value('Reevaluation Asset Details', i.name, 'ratio', reev_list[0].ratio)
-			frappe.db.set_value('Reevaluation Asset Details', i.name, 'dotation_periode', reev_list[0].depreciation_amount)
+			valeur_reeval = 0
+			depreciation_reeval = 0
+			ratio = 0
+			depreciation_amount = 0
+
+			if reev_list[0].ratio == None:
+				if old_exercice == 0:
+					continue
+				else:
+					dep_list = frappe.db.sql(
+						"""
+							SELECT SUM(depreciation_amount) AS depreciation_amount, Count(*) AS nb
+							FROM `tabDepreciation Schedule`
+							WHERE YEAR(schedule_date) <= %(exercice)s AND parent =%(asset)s
+						""",{"exercice":self.exercice, "asset": i.asset}, as_dict = 1
+					)
+					valeur_reeval = old_valeur_reevalue
+					depreciation_reeval = dep_list[0].depreciation_amount * old_ratio
+					ratio = old_ratio
+					depreciation_amount = dep_list[0].depreciation_amount
+			else:
+				valeur_reeval = reev_list[0].valeur_reeval
+				depreciation_reeval = reev_list[0].depreciation_reeval
+				ratio = reev_list[0].ratio
+				depreciation_amount = reev_list[0].depreciation_amount
+
+
+
+			i.valeur_reevalue = valeur_reeval
+			i.amortissement_reevalue = depreciation_reeval
+			i.ratio = ratio
+			i.dotation_periode = depreciation_amount
+
+			frappe.db.set_value('Reevaluation Asset Details', i.name, 'valeur_reevalue', valeur_reeval)
+			frappe.db.set_value('Reevaluation Asset Details', i.name, 'amortissement_reevalue', depreciation_reeval)
+			frappe.db.set_value('Reevaluation Asset Details', i.name, 'ratio', ratio)
+			frappe.db.set_value('Reevaluation Asset Details', i.name, 'dotation_periode', depreciation_amount)
 
 
 			if exo_list[0].exercice == None:
-				comp_base = i.valeur_reevalue - old_valeur_reevalue
-				comp_dotation = i.amortissement_reevalue - old_amortissement_reevalue
+				comp_base = valeur_reeval - old_valeur_reevalue
+				comp_dotation = depreciation_reeval - old_amortissement_reevalue
 			else:
-				depreciation_amount = reev_list[0].depreciation_amount
-				ratio = reev_list[0].ratio
-				comp_base = i.valeur_reevalue - old_valeur_reevalue
-				comp_dotation = (i.amortissement_reevalue - depreciation_amount) - old_complement_amortissement
+				#depreciation_amount = depreciation_amount
+				#ratio = ratio
+				comp_base = valeur_reeval - old_valeur_reevalue
+				comp_dotation = (depreciation_reeval - depreciation_amount) - old_complement_amortissement
 
 			i.complement_valeur = comp_base
 			i.complement_amortissement = comp_dotation
@@ -146,6 +214,10 @@ class ReevaluationAnnuelle(Document):
 				as_doc.make_complement_entries(comp_base, 'base', self.name, self.posting_date)
 			if comp_dotation > 0 :
 				as_doc.make_complement_entries(comp_dotation, 'complement', self.name, self.posting_date)
+
+
+			frappe.db.set_value('Asset', i.parent, 'last_reevaluation', self.name)
+			frappe.db.set_value('Asset', i.parent, 'last_ratio', ratio)
 
 			"""
 			rb_doc = frappe.new_doc('Reevaluation Bien')
